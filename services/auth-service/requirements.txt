@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+psycopg2-binary
+pydantic[email]
+PyJWT==2.4.0
+httpx

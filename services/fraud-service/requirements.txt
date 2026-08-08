@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+psycopg2-binary
+pydantic
+PyJWT==2.4.0
+httpx
+redis
+kafka-python
