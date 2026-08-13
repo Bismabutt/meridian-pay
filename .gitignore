@@ -1,0 +1,36 @@
+# Secrets - never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+kubeconfig*
+credentials
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# Go
+/services/ledger-service/ledger-service
+*.exe
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
