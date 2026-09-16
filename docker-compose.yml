@@ -1,0 +1,239 @@
+services:
+
+  # ============================================================
+  # BACKING SERVICES
+  # ============================================================
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: meridian_app
+      POSTGRES_PASSWORD: MeridianDev2024!
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meridian_app -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    restart: unless-stopped
+
+  # ============================================================
+  # TEST DOUBLES
+  # ============================================================
+
+  partner-bank-sandbox:
+    build: ./sandboxes/partner-bank
+    image: meridian-pay/partner-bank-sandbox:0.1.0
+    ports:
+      - "9100:9100"
+    environment:
+      PORT: 9100
+    restart: unless-stopped
+
+  identity-provider-sandbox:
+    build: ./sandboxes/identity-provider
+    image: meridian-pay/identity-provider-sandbox:0.1.0
+    ports:
+      - "9101:9101"
+    environment:
+      PORT: 9101
+    restart: unless-stopped
+
+  fx-provider-sandbox:
+    build: ./sandboxes/fx-provider
+    image: meridian-pay/fx-provider-sandbox:0.1.0
+    ports:
+      - "9102:9102"
+    environment:
+      PORT: 9102
+    restart: unless-stopped
+
+  email-provider-sandbox:
+    build: ./sandboxes/email-provider
+    image: meridian-pay/email-provider-sandbox:0.1.0
+    ports:
+      - "9103:9103"
+    environment:
+      PORT: 9103
+    restart: unless-stopped
+
+  # ============================================================
+  # APPLICATION ZONE
+  # ============================================================
+
+  auth-service:
+    build: ./services/auth-service
+    image: meridian-pay/auth-service:0.1.0
+    ports:
+      - "8001:8001"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: auth_db
+      REDIS_HOST: redis
+      KAFKA_BOOTSTRAP: kafka:29092
+      IDENTITY_PROVIDER_URL: http://identity-provider-sandbox:9101
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  account-service:
+    build: ./services/account-service
+    image: meridian-pay/account-service:0.1.0
+    ports:
+      - "8002:8002"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: account_db
+      REDIS_HOST: redis
+      KAFKA_BOOTSTRAP: kafka:29092
+      LEDGER_SERVICE_URL: http://ledger-service:8005
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  fx-service:
+    build: ./services/fx-service
+    image: meridian-pay/fx-service:0.1.0
+    ports:
+      - "8007:8007"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: fx_db
+      FX_PROVIDER_URL: http://fx-provider-sandbox:9102
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  fraud-service:
+    build: ./services/fraud-service
+    image: meridian-pay/fraud-service:0.1.0
+    ports:
+      - "8006:8006"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: fraud_db
+      KAFKA_BOOTSTRAP: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  notification-service:
+    build: ./services/notification-service
+    image: meridian-pay/notification-service:0.1.0
+    ports:
+      - "8008:8008"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: notif_db
+      KAFKA_BOOTSTRAP: kafka:29092
+      EMAIL_PROVIDER_URL: http://email-provider-sandbox:9103
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============================================================
+  # MONEY ZONE
+  # ============================================================
+
+  payment-service:
+    build: ./services/payment-service
+    image: meridian-pay/payment-service:0.1.0
+    ports:
+      - "8004:8004"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: payment_db
+      REDIS_HOST: redis
+      KAFKA_BOOTSTRAP: kafka:29092
+      LEDGER_SERVICE_URL: http://ledger-service:8005
+      PARTNER_BANK_URL: http://partner-bank-sandbox:9100
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ledger-service:
+    build: ./services/ledger-service
+    image: meridian-pay/ledger-service:0.1.0
+    ports:
+      - "8005:8005"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ledger_db
+      PORT: 8005
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============================================================
+  # EDGE
+  # ============================================================
+
+  api-gateway:
+    build: ./services/api-gateway
+    image: meridian-pay/api-gateway:0.1.0
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8001
+      ACCOUNT_SERVICE_URL: http://account-service:8002
+      PAYMENT_SERVICE_URL: http://payment-service:8004
+      FX_SERVICE_URL: http://fx-service:8007
+    depends_on:
+      - auth-service
+      - account-service
+      - payment-service
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
