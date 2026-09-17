@@ -111,3 +111,38 @@ module "rds" {
     }
   }
 }
+
+module "redis" {
+  source = "../../modules/redis"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  vpc_id                     = module.network.vpc_id
+  private_subnet_ids         = module.network.private_subnet_ids
+  allowed_security_group_ids = [module.eks.cluster_security_group_id]
+
+  node_type       = "cache.t4g.micro"
+  engine_version  = "7.1"
+  num_cache_nodes = 1
+}
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project_name = var.project_name
+
+  repositories = [
+    "api-gateway",
+    "auth-service",
+    "account-service",
+    "payment-service",
+    "ledger-service",
+    "fraud-service",
+    "fx-service",
+    "notification-service",
+  ]
+
+  image_retention_count = 10
+  scan_on_push          = true
+}
