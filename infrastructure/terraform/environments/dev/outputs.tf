@@ -26,3 +26,11 @@ output "cluster_endpoint" {
 output "kubeconfig_command" {
   value = module.eks.kubeconfig_command
 }
+
+output "database_endpoints" {
+  value = module.rds.database_endpoints
+}
+
+output "database_secret_names" {
+  value = module.rds.secret_names
+}
