@@ -14,3 +14,15 @@ output "nat_gateway_ips" {
   description = "Outbound IPs. Partners may need these allowlisted."
   value       = module.network.nat_gateway_ips
 }
+
+output "cluster_name" {
+  value = module.eks.cluster_name
+}
+
+output "cluster_endpoint" {
+  value = module.eks.cluster_endpoint
+}
+
+output "kubeconfig_command" {
+  value = module.eks.kubeconfig_command
+}
