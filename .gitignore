@@ -23,6 +23,7 @@ venv/
 *.tfstate
 *.tfstate.*
 *.tfvars
+!infrastructure/terraform/bootstrap/terraform.tfvars
 !example.tfvars
 
 # Editor / OS
