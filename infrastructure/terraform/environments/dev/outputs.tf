@@ -34,3 +34,11 @@ output "database_endpoints" {
 output "database_secret_names" {
   value = module.rds.secret_names
 }
+
+output "redis_endpoint" {
+  value = module.redis.redis_endpoint
+}
+
+output "ecr_repository_urls" {
+  value = module.ecr.repository_urls
+}
