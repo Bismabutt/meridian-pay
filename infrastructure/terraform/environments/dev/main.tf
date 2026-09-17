@@ -45,3 +45,69 @@ module "eks" {
 
   endpoint_public_access = true
 }
+
+module "rds" {
+  source = "../../modules/rds"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  vpc_id                     = module.network.vpc_id
+  private_subnet_ids         = module.network.private_subnet_ids
+  allowed_security_group_ids = [module.eks.cluster_security_group_id]
+
+  engine_version = "15.7"
+
+  # Sizing follows the criticality tiers in the service decomposition.
+  databases = {
+    ledger = {
+      instance_class        = "db.t4g.small"
+      allocated_storage     = 20
+      multi_az              = true
+      backup_retention_days = 7
+      deletion_protection   = false
+    }
+    payment = {
+      instance_class        = "db.t4g.small"
+      allocated_storage     = 20
+      multi_az              = true
+      backup_retention_days = 7
+      deletion_protection   = false
+    }
+    auth = {
+      instance_class        = "db.t4g.micro"
+      allocated_storage     = 20
+      multi_az              = false
+      backup_retention_days = 3
+      deletion_protection   = false
+    }
+    account = {
+      instance_class        = "db.t4g.small"
+      allocated_storage     = 20
+      multi_az              = false
+      backup_retention_days = 3
+      deletion_protection   = false
+    }
+    fraud = {
+      instance_class        = "db.t4g.micro"
+      allocated_storage     = 20
+      multi_az              = false
+      backup_retention_days = 1
+      deletion_protection   = false
+    }
+    fx = {
+      instance_class        = "db.t4g.micro"
+      allocated_storage     = 20
+      multi_az              = false
+      backup_retention_days = 1
+      deletion_protection   = false
+    }
+    notification = {
+      instance_class        = "db.t4g.micro"
+      allocated_storage     = 20
+      multi_az              = false
+      backup_retention_days = 1
+      deletion_protection   = false
+    }
+  }
+}
