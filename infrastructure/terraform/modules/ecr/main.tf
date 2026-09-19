@@ -12,7 +12,7 @@ resource "aws_ecr_repository" "main" {
     encryption_type = "AES256"
   }
 
-  force_delete = true  # dev only, allows destroy with images present
+  force_delete = true # dev only, allows destroy with images present
 
   tags = {
     Name    = "${var.project_name}-${each.value}"
