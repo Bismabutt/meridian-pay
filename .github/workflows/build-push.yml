@@ -1,0 +1,58 @@
+name: Build and push to ECR
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # for OIDC authentication to AWS
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  build-push:
+    name: Build and push
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - account-service
+          - payment-service
+          - ledger-service
+          - fraud-service
+          - fx-service
+          - notification-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./services/${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/meridian-pay/${{ matrix.service }}:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/meridian-pay/${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
