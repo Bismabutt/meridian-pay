@@ -1,5 +1,5 @@
 locals {
-  name = "${var.project_name}-${var.environment}"
+  name      = "${var.project_name}-${var.environment}"
   nat_count = var.single_nat_gateway ? 1 : length(var.availability_zones)
 }
 

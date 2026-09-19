@@ -29,11 +29,11 @@ variable "engine_version" {
 variable "databases" {
   description = "One entry per service. Sizing follows the criticality tiers in the service decomposition."
   type = map(object({
-    instance_class          = string
-    allocated_storage       = number
-    multi_az                = bool
-    backup_retention_days   = number
-    deletion_protection     = bool
+    instance_class        = string
+    allocated_storage     = number
+    multi_az              = bool
+    backup_retention_days = number
+    deletion_protection   = bool
   }))
 }
 

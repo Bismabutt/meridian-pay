@@ -58,7 +58,7 @@ resource "aws_secretsmanager_secret" "db" {
 
   name                    = "${local.name}/rds/${each.key}"
   description             = "Master credentials for the ${each.key} database"
-  recovery_window_in_days = 0  # dev only, allows immediate deletion
+  recovery_window_in_days = 0 # dev only, allows immediate deletion
 
   tags = {
     Name    = "${local.name}-${each.key}-credentials"
@@ -93,7 +93,7 @@ resource "aws_db_instance" "main" {
   instance_class = each.value.instance_class
 
   allocated_storage     = each.value.allocated_storage
-  max_allocated_storage = each.value.allocated_storage * 4  # storage autoscaling
+  max_allocated_storage = each.value.allocated_storage * 4 # storage autoscaling
   storage_type          = "gp3"
   storage_encrypted     = true
 
@@ -114,9 +114,9 @@ resource "aws_db_instance" "main" {
   # Point in time recovery is implied by backup retention above zero
   copy_tags_to_snapshot = true
 
-  deletion_protection       = each.value.deletion_protection
-  skip_final_snapshot       = true   # dev only
-  performance_insights_enabled = false  # costs extra on small instances
+  deletion_protection          = each.value.deletion_protection
+  skip_final_snapshot          = true  # dev only
+  performance_insights_enabled = false # costs extra on small instances
 
   auto_minor_version_upgrade = true
 
