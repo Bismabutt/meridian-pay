@@ -56,6 +56,8 @@ resource "random_password" "master" {
 resource "aws_secretsmanager_secret" "db" {
   for_each = var.databases
 
+  # checkov:skip=CKV2_AWS_57:Automatic rotation requires a Lambda rotation function. Genuine gap, deferred and tracked, not dismissed.
+
   name                    = "${local.name}/rds/${each.key}"
   description             = "Master credentials for the ${each.key} database"
   recovery_window_in_days = 0 # dev only, allows immediate deletion
@@ -118,10 +120,12 @@ resource "aws_db_instance" "main" {
   skip_final_snapshot          = true  # dev only
   performance_insights_enabled = false # costs extra on small instances
 
-  auto_minor_version_upgrade = true
+  auto_minor_version_upgrade      = true
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   tags = {
     Name    = "${local.name}-${each.key}"
     Service = each.key
   }
 }
+
