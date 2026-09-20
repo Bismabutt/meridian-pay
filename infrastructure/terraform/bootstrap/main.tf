@@ -48,6 +48,12 @@ variable "state_bucket_name" {
 resource "aws_s3_bucket" "terraform_state" {
   bucket = var.state_bucket_name
 
+  # checkov:skip=CKV_AWS_144:Cross-region replication conflicts with the UK data residency requirement
+  # checkov:skip=CKV_AWS_145:AES256 is sufficient for a dev state bucket; KMS adds per-request cost
+  # checkov:skip=CKV2_AWS_62:Event notifications are not applicable to a Terraform state bucket
+  # checkov:skip=CKV2_AWS_61:State objects are small and versioned; no expiry policy is wanted
+  # checkov:skip=CKV_AWS_18:Access logging deferred, tracked as follow-up work
+
   lifecycle {
     prevent_destroy = true
   }
