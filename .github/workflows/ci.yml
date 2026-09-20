@@ -25,10 +25,11 @@ jobs:
         with:
           fetch-depth: 0   # full history, so historical secrets are found
 
-      - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run GitLeaks over full history
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source /repo --config /repo/.gitleaks.toml \
+            --redact -v --exit-code 1
 
   # ============================================================
   # GATE 2 — Static analysis

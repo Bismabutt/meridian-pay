@@ -1,0 +1,24 @@
+title = "Meridian Pay"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+The baseline commit 215d0817 contains placeholder credentials from the
+inherited application codebase. These were never real: the AWS values are
+the documented AWS example keys, and the partner, identity, FX and email
+keys are fictional strings for services that do not exist.
+
+History is deliberately not rewritten. Rewriting would change every commit
+hash and destroy the record of how this platform was built, which is the
+point of this repository. In a production incident the correct response
+would be to rewrite history and rotate every affected credential; here
+there is nothing to rotate.
+
+The secrets have been removed from the current codebase. This allowlist
+covers the historical commit only, so any new secret is still caught.
+"""
+commits = [
+  "215d0817329795cbd2014296ec7b85072b8cd68a",
+]

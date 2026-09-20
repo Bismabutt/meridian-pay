@@ -14,9 +14,9 @@ class Settings:
     DB_PORT = int(os.getenv("DB_PORT", "5432"))
     DB_NAME = os.getenv("DB_NAME", "notif_db")
     DB_USER = os.getenv("DB_USER", "meridian_app")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "MeridianDev2024!")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
-    JWT_SECRET = "meridian-super-secret-key-change-me"
+    JWT_SECRET = os.getenv("JWT_SECRET", "")
     JWT_ALGORITHM = "HS256"
 
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -25,7 +25,7 @@ class Settings:
     KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
 
     EMAIL_PROVIDER_URL = os.getenv("EMAIL_PROVIDER_URL", "http://email-provider-sandbox:9103")
-    EMAIL_PROVIDER_KEY = "sg_live_KJ8s0dF9aQ2nX7vB4mZ1"
+    EMAIL_PROVIDER_KEY = os.getenv("EMAIL_PROVIDER_KEY", "")
 
 
 settings = Settings()

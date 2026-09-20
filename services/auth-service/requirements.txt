@@ -1,6 +1,6 @@
-fastapi
-uvicorn
-psycopg2-binary
-pydantic[email]
-PyJWT==2.4.0
-httpx
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+psycopg2-binary==2.9.10
+pydantic[email]==2.10.4
+PyJWT==2.13.0
+httpx==0.28.1
