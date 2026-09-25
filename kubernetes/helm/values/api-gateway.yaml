@@ -1,0 +1,42 @@
+nameOverride: api-gateway
+namespace: meridian-edge
+tier: "1"
+port: 8000
+replicas: 4
+
+image:
+  repository: meridian-pay/api-gateway
+
+strategy:
+  maxSurge: 2
+  maxUnavailable: 0
+
+terminationGracePeriodSeconds: 45
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 4
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 65
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleDownStabilizationSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 3
+
+env:
+  REDIS_HOST: redis.meridian-app.svc.cluster.local
+  REDIS_PORT: "6379"
+  AUTH_SERVICE_URL: http://auth-service.meridian-app.svc.cluster.local:8001
+  ACCOUNT_SERVICE_URL: http://account-service.meridian-app.svc.cluster.local:8002
+  PAYMENT_SERVICE_URL: http://payment-service.meridian-money.svc.cluster.local:8004
+  FX_SERVICE_URL: http://fx-service.meridian-app.svc.cluster.local:8007

@@ -1,0 +1,56 @@
+# Defaults. Every service overrides what it needs in its own values file.
+
+nameOverride: ""
+namespace: meridian-app
+tier: "2"
+
+image:
+  repository: meridian-pay/placeholder
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+port: 8080
+
+replicas: 2
+
+strategy:
+  maxSurge: 1
+  maxUnavailable: 1
+
+terminationGracePeriodSeconds: 30
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    memory: 256Mi
+
+probes:
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleDownStabilizationSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Plain environment variables
+env: {}
+
+# Values pulled from Kubernetes secrets
+envFromSecret: {}

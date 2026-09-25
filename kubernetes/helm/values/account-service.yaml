@@ -1,0 +1,48 @@
+nameOverride: account-service
+namespace: meridian-app
+tier: "2"
+port: 8002
+replicas: 6
+
+image:
+  repository: meridian-pay/account-service
+
+strategy:
+  maxSurge: 2
+  maxUnavailable: 1
+
+terminationGracePeriodSeconds: 30
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 768Mi
+  limits:
+    memory: 768Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 6
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 65
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleDownStabilizationSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 4
+
+env:
+  DB_HOST: postgres.meridian-app.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: account_db
+  REDIS_HOST: redis.meridian-app.svc.cluster.local
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP: kafka.meridian-app.svc.cluster.local:9092
+  LEDGER_SERVICE_URL: http://ledger-service.meridian-money.svc.cluster.local:8005
+
+envFromSecret:
+  DB_PASSWORD:
+    name: account-db-credentials
+    key: password
