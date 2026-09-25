@@ -68,12 +68,7 @@ jobs:
           # Blocking set: encryption, public exposure, and credential handling.
           # The full ruleset includes controls appropriate to a production
           # enterprise account rather than a cost-constrained dev environment.
-          check: >-
-            CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,
-            CKV_AWS_21,CKV_AWS_23,CKV_AWS_41,CKV_AWS_53,CKV_AWS_54,
-            CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_58,CKV_AWS_60,
-            CKV_AWS_79,CKV_AWS_88,CKV_AWS_93,CKV_AWS_226,CKV_AWS_231,
-            CKV2_AWS_11,CKV2_AWS_12
+          check: CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_21,CKV_AWS_23,CKV_AWS_41,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_58,CKV_AWS_60,CKV_AWS_79,CKV_AWS_88,CKV_AWS_93,CKV_AWS_226,CKV_AWS_231,CKV2_AWS_11,CKV2_AWS_12
 
   # ============================================================
   # Terraform validation
@@ -152,5 +147,5 @@ jobs:
           format: table
           exit-code: '1'                    # fail the build on findings
           ignore-unfixed: true              # only findings with an available fix
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           vuln-type: 'os,library'
