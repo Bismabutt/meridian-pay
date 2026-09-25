@@ -35,6 +35,8 @@ spec:
             - name: http
               containerPort: 8007
           env:
+            - name: DB_PORT
+              value: "5432"
             - name: DB_HOST
               value: postgres.meridian-app.svc.cluster.local
             - name: DB_NAME

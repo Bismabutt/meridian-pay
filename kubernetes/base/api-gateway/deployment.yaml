@@ -35,6 +35,8 @@ spec:
             - name: http
               containerPort: 8000
           env:
+            - name: REDIS_PORT
+              value: "6379"
             - name: REDIS_HOST
               value: redis.meridian-app.svc.cluster.local
             - name: AUTH_SERVICE_URL

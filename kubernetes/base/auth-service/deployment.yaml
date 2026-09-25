@@ -35,10 +35,14 @@ spec:
             - name: http
               containerPort: 8001
           env:
+            - name: DB_PORT
+              value: "5432"
             - name: DB_HOST
               value: postgres.meridian-app.svc.cluster.local
             - name: DB_NAME
               value: auth_db
+            - name: REDIS_PORT
+              value: "6379"
             - name: REDIS_HOST
               value: redis.meridian-app.svc.cluster.local
             - name: KAFKA_BOOTSTRAP
