@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: account-service
+  namespace: meridian-app
+spec:
+  minAvailable: 4
+  selector:
+    matchLabels:
+      app: account-service

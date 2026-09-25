@@ -1,0 +1,45 @@
+nameOverride: fx-service
+namespace: meridian-app
+tier: "2"
+port: 8007
+replicas: 2
+
+image:
+  repository: meridian-pay/fx-service
+
+strategy:
+  maxSurge: 1
+  maxUnavailable: 1
+
+terminationGracePeriodSeconds: 30
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 75
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleDownStabilizationSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+env:
+  DB_HOST: postgres.meridian-app.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: fx_db
+  FX_PROVIDER_URL: http://fx-provider-sandbox.meridian-app.svc.cluster.local:9102
+
+envFromSecret:
+  DB_PASSWORD:
+    name: fx-db-credentials
+    key: password

@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ledger-service
+  namespace: meridian-money
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: ledger-service

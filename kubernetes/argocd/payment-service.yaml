@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: payment-service
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Bismabutt/meridian-pay.git
+    targetRevision: main
+    path: kubernetes/helm/meridian-service
+    helm:
+      valueFiles:
+        - ../values/payment-service.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: meridian-money
+
+  syncPolicy:
+    automated:
+      prune: true        # remove resources deleted from git
+      selfHeal: true     # revert manual changes made in the cluster
+    syncOptions:
+      - CreateNamespace=false

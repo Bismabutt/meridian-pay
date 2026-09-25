@@ -1,0 +1,45 @@
+nameOverride: fraud-service
+namespace: meridian-app
+tier: "2"
+port: 8006
+replicas: 2
+
+image:
+  repository: meridian-pay/fraud-service
+
+strategy:
+  maxSurge: 1
+  maxUnavailable: 1
+
+terminationGracePeriodSeconds: 30
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 70
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleDownStabilizationSeconds: 300
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+env:
+  DB_HOST: postgres.meridian-app.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: fraud_db
+  KAFKA_BOOTSTRAP: kafka.meridian-app.svc.cluster.local:9092
+
+envFromSecret:
+  DB_PASSWORD:
+    name: fraud-db-credentials
+    key: password

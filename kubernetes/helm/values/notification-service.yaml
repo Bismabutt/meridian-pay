@@ -1,0 +1,49 @@
+nameOverride: notification-service
+namespace: meridian-app
+tier: "3"
+port: 8008
+replicas: 2
+
+image:
+  repository: meridian-pay/notification-service
+
+strategy:
+  maxSurge: 1
+  maxUnavailable: 1
+
+terminationGracePeriodSeconds: 30
+
+# Tier 3 is capped so it cannot starve the money path under contention.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  scaleUpPercent: 100
+  scaleUpPeriodSeconds: 30
+  scaleDownStabilizationSeconds: 300
+
+# Tier 3 is explicitly permitted to lag; no disruption budget.
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 0
+
+env:
+  DB_HOST: postgres.meridian-app.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: notif_db
+  KAFKA_BOOTSTRAP: kafka.meridian-app.svc.cluster.local:9092
+  EMAIL_PROVIDER_URL: http://email-provider-sandbox.meridian-app.svc.cluster.local:9103
+
+envFromSecret:
+  DB_PASSWORD:
+    name: notification-db-credentials
+    key: password

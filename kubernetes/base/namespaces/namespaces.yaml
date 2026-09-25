@@ -1,0 +1,29 @@
+# ============================================================
+# Namespaces map to the trust zones in the architecture.
+# The boundary between them is enforced by NetworkPolicy,
+# not by convention.
+# ============================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: meridian-edge
+  labels:
+    zone: edge
+    app.kubernetes.io/part-of: meridian-pay
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: meridian-app
+  labels:
+    zone: application
+    app.kubernetes.io/part-of: meridian-pay
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: meridian-money
+  labels:
+    zone: money
+    app.kubernetes.io/part-of: meridian-pay
