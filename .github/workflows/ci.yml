@@ -99,6 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false      # report every service, not just the first failure
+      max-parallel: 3
       matrix:
         service:
           - api-gateway
@@ -126,8 +127,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
         with:
           image-ref: meridian-pay/${{ matrix.service }}:${{ github.sha }}
           format: table
