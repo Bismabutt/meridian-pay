@@ -49,8 +49,23 @@ resource "aws_security_group" "cluster" {
 }
 
 # ------------------------------------------------------------
-# The cluster
+# KMS key for envelope encryption of Kubernetes secrets
 # ------------------------------------------------------------
+
+resource "aws_kms_key" "eks" {
+  description             = "Envelope encryption for ${local.name} Kubernetes secrets"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "${local.name}-eks-secrets"
+  }
+}
+
+resource "aws_kms_alias" "eks" {
+  name          = "alias/${local.name}-eks-secrets"
+  target_key_id = aws_kms_key.eks.key_id
+}
 
 resource "aws_eks_cluster" "main" {
   name     = "${local.name}-cluster"
@@ -64,6 +79,15 @@ resource "aws_eks_cluster" "main" {
     endpoint_public_access  = var.endpoint_public_access
   }
 
+  # Envelope encryption of Kubernetes secrets with a customer managed key.
+  # EKS encrypts etcd with an AWS managed key by default; this adds a second
+  # layer under a key we control and can audit.
+  encryption_config {
+    provider {
+      key_arn = aws_kms_key.eks.arn
+    }
+    resources = ["secrets"]
+  }
   # Control plane logs. Required for the audit trail noted in discovery.
   enabled_cluster_log_types = ["api", "audit", "authenticator"]
 
@@ -125,6 +149,27 @@ resource "aws_iam_role_policy_attachment" "node_ecr" {
 }
 
 # ------------------------------------------------------------
+# Launch template — enforces IMDSv2 on worker nodes
+# ------------------------------------------------------------
+
+resource "aws_launch_template" "node" {
+  name_prefix = "${local.name}-node-"
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # IMDSv2 only
+    http_put_response_hop_limit = 1
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "${local.name}-node"
+    }
+  }
+}
+
+# ------------------------------------------------------------
 # Managed node group
 # ------------------------------------------------------------
 
@@ -145,6 +190,11 @@ resource "aws_eks_node_group" "main" {
 
   update_config {
     max_unavailable = 1
+  }
+
+  launch_template {
+    name    = aws_launch_template.node.name
+    version = aws_launch_template.node.latest_version
   }
 
   tags = {

@@ -14,9 +14,9 @@ class Settings:
     DB_PORT = int(os.getenv("DB_PORT", "5432"))
     DB_NAME = os.getenv("DB_NAME", "account_db")
     DB_USER = os.getenv("DB_USER", "meridian_app")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "MeridianDev2024!")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
-    JWT_SECRET = "meridian-super-secret-key-change-me"
+    JWT_SECRET = os.getenv("JWT_SECRET", "")
     JWT_ALGORITHM = "HS256"
 
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")

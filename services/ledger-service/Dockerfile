@@ -1,7 +1,7 @@
 # ============================================================
 # STAGE 1 — build the binary (this whole stage gets thrown away)
 # ============================================================
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /build
 

@@ -1,8 +1,8 @@
-fastapi
-uvicorn
-psycopg2-binary
-pydantic
-PyJWT==2.4.0
-httpx
-redis
-kafka-python
+fastapi==0.118.0
+uvicorn[standard]==0.34.0
+psycopg2-binary==2.9.9
+pydantic==2.10.4
+PyJWT==2.13.0
+httpx==0.28.1
+redis==5.2.1
+kafka-python==2.3.2

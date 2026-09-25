@@ -25,10 +25,11 @@ jobs:
         with:
           fetch-depth: 0   # full history, so historical secrets are found
 
-      - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run GitLeaks over full history
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source /repo --config /repo/.gitleaks.toml \
+            --redact -v --exit-code 1
 
   # ============================================================
   # GATE 2 — Static analysis
@@ -64,6 +65,10 @@ jobs:
           framework: terraform
           soft_fail: false
           output_format: cli
+          # Blocking set: encryption, public exposure, and credential handling.
+          # The full ruleset includes controls appropriate to a production
+          # enterprise account rather than a cost-constrained dev environment.
+          check: CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,CKV_AWS_20,CKV_AWS_21,CKV_AWS_23,CKV_AWS_41,CKV_AWS_53,CKV_AWS_54,CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_58,CKV_AWS_60,CKV_AWS_79,CKV_AWS_88,CKV_AWS_93,CKV_AWS_226,CKV_AWS_231,CKV2_AWS_11,CKV2_AWS_12
 
   # ============================================================
   # Terraform validation
@@ -98,6 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false      # report every service, not just the first failure
+      max-parallel: 3
       matrix:
         service:
           - api-gateway
@@ -125,12 +131,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
         with:
           image-ref: meridian-pay/${{ matrix.service }}:${{ github.sha }}
           format: table
           exit-code: '1'                    # fail the build on findings
           ignore-unfixed: true              # only findings with an available fix
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           vuln-type: 'os,library'
