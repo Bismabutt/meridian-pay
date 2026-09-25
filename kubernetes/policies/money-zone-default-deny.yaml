@@ -1,0 +1,22 @@
+# ============================================================
+# Default deny for the money zone.
+#
+# Discovery finding: an analytics query was run directly against
+# the production ledger database, degrading payment latency for
+# roughly an hour. Everything could reach everything.
+#
+# This policy makes that class of incident structurally impossible
+# rather than discouraged. Nothing reaches the money zone unless a
+# later policy explicitly allows it.
+# ============================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: meridian-money
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress

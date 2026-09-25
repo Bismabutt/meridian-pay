@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fx-service
+  namespace: meridian-app
+  labels:
+    app: fx-service
+spec:
+  type: ClusterIP
+  selector:
+    app: fx-service
+  ports:
+    - name: http
+      port: 8007
+      targetPort: http

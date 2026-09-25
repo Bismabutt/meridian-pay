@@ -1,0 +1,30 @@
+# ============================================================
+# account-service reads authoritative balances from the ledger.
+#
+# Per the service decomposition, the balance projection in
+# account-db is not authoritative; any money-moving operation
+# queries the ledger directly. Read-only HTTP path, not database access.
+# ============================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-account-balance-reads
+  namespace: meridian-money
+spec:
+  podSelector:
+    matchLabels:
+      app: ledger-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              zone: application
+          podSelector:
+            matchLabels:
+              app: account-service
+      ports:
+        - protocol: TCP
+          port: 8005

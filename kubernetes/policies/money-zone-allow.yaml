@@ -1,0 +1,49 @@
+# ============================================================
+# The only traffic permitted into the money zone.
+#
+# Allowed callers: api-gateway (customer payment requests) and
+# payment-service (internal, calling the ledger).
+# ============================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-to-payment
+  namespace: meridian-money
+spec:
+  podSelector:
+    matchLabels:
+      app: payment-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              zone: edge
+          podSelector:
+            matchLabels:
+              app: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8004
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-payment-to-ledger
+  namespace: meridian-money
+spec:
+  podSelector:
+    matchLabels:
+      app: ledger-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: payment-service
+      ports:
+        - protocol: TCP
+          port: 8005

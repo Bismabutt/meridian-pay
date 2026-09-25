@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service
+  namespace: meridian-app
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: auth-service
