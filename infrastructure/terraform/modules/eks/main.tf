@@ -125,6 +125,27 @@ resource "aws_iam_role_policy_attachment" "node_ecr" {
 }
 
 # ------------------------------------------------------------
+# Launch template — enforces IMDSv2 on worker nodes
+# ------------------------------------------------------------
+
+resource "aws_launch_template" "node" {
+  name_prefix = "${local.name}-node-"
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # IMDSv2 only
+    http_put_response_hop_limit = 1
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "${local.name}-node"
+    }
+  }
+}
+
+# ------------------------------------------------------------
 # Managed node group
 # ------------------------------------------------------------
 
@@ -145,6 +166,11 @@ resource "aws_eks_node_group" "main" {
 
   update_config {
     max_unavailable = 1
+  }
+
+  launch_template {
+    name    = aws_launch_template.node.name
+    version = aws_launch_template.node.latest_version
   }
 
   tags = {
