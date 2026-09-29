@@ -12,12 +12,14 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from app.config import settings
+from app.metrics import install_metrics
 from app.db import query
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="Meridian Pay — account-service", version="2.1.0")
+install_metrics(app, settings.SERVICE_NAME)
 
 
 class ProfileCreate(BaseModel):

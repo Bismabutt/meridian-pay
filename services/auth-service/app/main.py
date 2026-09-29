@@ -7,6 +7,7 @@ import httpx
 from fastapi import FastAPI, HTTPException, Header, Depends
 
 from app.config import settings
+from app.metrics import install_metrics
 from app.db import query
 from app.models import RegisterRequest, LoginRequest, TokenResponse, UserResponse, ApiKeyResponse
 from app.security import (
@@ -18,6 +19,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="Meridian Pay — auth-service", version="1.4.2")
+install_metrics(app, settings.SERVICE_NAME)
 
 
 @app.get("/health")

@@ -13,6 +13,7 @@ import redis
 from fastapi import FastAPI, HTTPException
 
 from app.config import settings
+from app.metrics import install_metrics
 from app.db import query, get_conn, put_conn
 from app.models import PaymentRequest, PaymentResponse
 from app.partner_bank import submit_payment, PartnerBankError
@@ -21,6 +22,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="Meridian Pay — payment-service", version="3.0.1")
+install_metrics(app, settings.SERVICE_NAME)
 
 rds = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, decode_responses=True)
 
