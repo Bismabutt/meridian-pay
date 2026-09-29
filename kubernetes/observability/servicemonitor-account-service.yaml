@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: account-service
+  namespace: meridian-app
+  labels:
+    app: account-service
+spec:
+  selector:
+    matchLabels:
+      app: account-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

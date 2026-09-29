@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ledger-service
+  namespace: meridian-money
+  labels:
+    app: ledger-service
+spec:
+  selector:
+    matchLabels:
+      app: ledger-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
