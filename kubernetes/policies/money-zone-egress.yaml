@@ -13,6 +13,7 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # DNS, or nothing can resolve anything
     - to:
         - namespaceSelector:
             matchLabels:
@@ -25,6 +26,8 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+
+    # Databases, Redis, and the partner bank sandbox
     - to:
         - namespaceSelector:
             matchLabels:
@@ -35,9 +38,18 @@ spec:
         - protocol: TCP
           port: 6379
         - protocol: TCP
-          port: 9092
-        - protocol: TCP
           port: 9100
+
+    # Kafka, which runs in its own namespace under the Strimzi operator
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+
+    # payment-service to ledger-service, within the zone
     - to:
         - podSelector:
             matchLabels:

@@ -39,7 +39,7 @@ env:
   DB_NAME: auth_db
   REDIS_HOST: redis.meridian-app.svc.cluster.local
   REDIS_PORT: "6379"
-  KAFKA_BOOTSTRAP: kafka.meridian-app.svc.cluster.local:9092
+  KAFKA_BOOTSTRAP: meridian-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
   IDENTITY_PROVIDER_URL: http://identity-provider-sandbox.meridian-app.svc.cluster.local:9101
 
 envFromSecret:

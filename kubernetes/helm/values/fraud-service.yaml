@@ -34,10 +34,11 @@ podDisruptionBudget:
   minAvailable: 1
 
 env:
+  REDIS_PORT: "6379"
   DB_HOST: postgres.meridian-app.svc.cluster.local
   DB_PORT: "5432"
   DB_NAME: fraud_db
-  KAFKA_BOOTSTRAP: kafka.meridian-app.svc.cluster.local:9092
+  KAFKA_BOOTSTRAP: meridian-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
 
 envFromSecret:
   DB_PASSWORD:

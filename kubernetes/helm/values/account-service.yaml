@@ -39,7 +39,7 @@ env:
   DB_NAME: account_db
   REDIS_HOST: redis.meridian-app.svc.cluster.local
   REDIS_PORT: "6379"
-  KAFKA_BOOTSTRAP: kafka.meridian-app.svc.cluster.local:9092
+  KAFKA_BOOTSTRAP: meridian-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
   LEDGER_SERVICE_URL: http://ledger-service.meridian-money.svc.cluster.local:8005
 
 envFromSecret:
