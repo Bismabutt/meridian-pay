@@ -89,16 +89,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--count", type=int, default=50,
                         help="How many businesses to export")
-    parser.add_argument("--output", default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-
-    # Confine the output path to the repository, so a supplied argument
-    # cannot write outside it.
-    repo_root = os.path.abspath(os.getcwd())
-    output_path = os.path.abspath(os.path.join(repo_root, args.output))
-    if not output_path.startswith(repo_root + os.sep):
-        print("Output path must be inside the repository.", file=sys.stderr)
-        sys.exit(1)
 
     businesses = fetch_businesses(args.count)
 
@@ -106,11 +97,13 @@ def main():
         print("Found users but no active accounts for them.", file=sys.stderr)
         sys.exit(1)
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w") as f:
+    # Fixed path. The load scenarios read this exact file, so making it
+    # configurable adds no value and creates a path traversal surface.
+    os.makedirs("load-tests", exist_ok=True)
+    with open(DEFAULT_OUTPUT, "w") as f:
         json.dump(businesses, f, indent=2)
 
-    print(f"Wrote {len(businesses)} businesses to {output_path}")
+    print(f"Wrote {len(businesses)} businesses to {DEFAULT_OUTPUT}")
 
 
 if __name__ == "__main__":
