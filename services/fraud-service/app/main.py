@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from kafka import KafkaConsumer
 
 from app.config import settings
+from app.metrics import install_metrics
 from app.db import query
 from app.rules import score_payment
 
@@ -19,6 +20,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="Meridian Pay — fraud-service", version="1.2.0")
+install_metrics(app, settings.SERVICE_NAME)
 
 CASE_THRESHOLD = 70
 

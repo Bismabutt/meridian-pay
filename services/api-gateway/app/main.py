@@ -12,11 +12,13 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.metrics import install_metrics
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="Meridian Pay — api-gateway", version="2.3.0")
+install_metrics(app, settings.SERVICE_NAME)
 
 rds = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, decode_responses=True)
 

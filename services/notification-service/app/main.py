@@ -13,12 +13,14 @@ from fastapi import FastAPI
 from kafka import KafkaConsumer
 
 from app.config import settings
+from app.metrics import install_metrics
 from app.db import query
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 app = FastAPI(title="Meridian Pay — notification-service", version="1.1.0")
+install_metrics(app, settings.SERVICE_NAME)
 
 TEMPLATES = {
     "payment.cleared": "Your payment of {amount} {currency} has been sent.",

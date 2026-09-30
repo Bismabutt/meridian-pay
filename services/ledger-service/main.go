@@ -20,6 +20,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var db *sql.DB
@@ -262,6 +263,8 @@ func main() {
 	r.Get("/v1/ledger/balance/{accountID}", getBalance)
 	r.Get("/v1/ledger/transactions/{transactionID}", getTransaction)
 	r.Post("/v1/ledger/reconcile", reconcile)
+	r.Post("/v1/ledger/reconcile", reconcile)
+	r.Handle("/metrics", promhttp.Handler())
 
 	port := env("PORT", "8005")
 	log.Printf("ledger-service listening on :%s", port)

@@ -1,0 +1,59 @@
+# Sized for a local cluster. EKS values increase retention and storage.
+
+prometheus:
+  prometheusSpec:
+    retention: 6h
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+
+    # Scrape any ServiceMonitor in the cluster, not only those with the
+    # release label. Simpler for a single-tenant platform.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+
+grafana:
+  adminPassword: meridian-local
+  persistence:
+    enabled: false
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 256Mi
+  defaultDashboardsEnabled: true
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
+
+# Node and kubelet metrics, for the capacity panels
+nodeExporter:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+
+# Not needed on kind — these components are not exposed
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
