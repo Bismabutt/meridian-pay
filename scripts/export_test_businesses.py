@@ -92,17 +92,25 @@ def main():
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
+    # Confine the output path to the repository, so a supplied argument
+    # cannot write outside it.
+    repo_root = os.path.abspath(os.getcwd())
+    output_path = os.path.abspath(os.path.join(repo_root, args.output))
+    if not output_path.startswith(repo_root + os.sep):
+        print("Output path must be inside the repository.", file=sys.stderr)
+        sys.exit(1)
+
     businesses = fetch_businesses(args.count)
 
     if not businesses:
         print("Found users but no active accounts for them.", file=sys.stderr)
         sys.exit(1)
 
-    os.makedirs(os.path.dirname(args.output), exist_ok=True)
-    with open(args.output, "w") as f:
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as f:
         json.dump(businesses, f, indent=2)
 
-    print(f"Wrote {len(businesses)} businesses to {args.output}")
+    print(f"Wrote {len(businesses)} businesses to {output_path}")
 
 
 if __name__ == "__main__":
