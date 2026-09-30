@@ -1,0 +1,45 @@
+# ============================================================
+# Payment event topics.
+#
+# Topics are declared rather than auto created, so partition counts and
+# retention are deliberate rather than whatever the first producer got.
+# ============================================================
+
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: payment.initiated
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: meridian-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000   # seven days
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: payment.cleared
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: meridian-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: payment.failed
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: meridian-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 604800000
