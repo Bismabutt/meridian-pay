@@ -1,0 +1,107 @@
+# ============================================================
+# Alert rules.
+#
+# Alerts describe customer impact rather than resource usage. A CPU
+# threshold does not tell an on call engineer whether anything is wrong;
+# a payment failure rate does.
+# ============================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: meridian-payment-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: payments
+      interval: 30s
+      rules:
+
+        # Fires during the rollback drill, and in any real incident where
+        # a release breaks payment submission.
+        - alert: PaymentFailureRateHigh
+          expr: |
+            (
+              sum(rate(payments_total{status="failed"}[2m]))
+              /
+              clamp_min(sum(rate(payments_total[2m])), 0.001)
+            ) > 0.01
+          for: 1m
+          labels:
+            severity: critical
+            tier: "1"
+          annotations:
+            summary: "Payment failure rate above 1 percent"
+            description: "{{ $value | humanizePercentage }} of payments are failing. Customers are being told their payments did not go through."
+
+        - alert: PaymentLatencyHigh
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(payment_duration_seconds_bucket[5m])) by (le)
+            ) > 0.3
+          for: 3m
+          labels:
+            severity: warning
+            tier: "1"
+          annotations:
+            summary: "p95 payment latency above the 300ms objective"
+            description: "Ninety five percent of customers are waiting longer than {{ $value }}s for confirmation."
+
+        # Pending payments are expected during a partner outage. A sustained
+        # queue means the partner has not recovered.
+        - alert: PaymentsQueuedTooLong
+          expr: payment_oldest_pending_seconds > 600
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Payments have been queued for over ten minutes"
+            description: "The oldest queued payment is {{ $value }}s old. The partner bank may still be unavailable."
+
+    - name: ledger
+      interval: 30s
+      rules:
+
+        # A non zero reconciliation variance means the ledger and the pooled
+        # balance disagree. That is a safeguarding incident, not a warning.
+        - alert: LedgerReconciliationVariance
+          expr: abs(ledger_reconciliation_variance_minor) > 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Ledger does not reconcile with the partner pooled balance"
+            description: "Variance of {{ $value }} minor units. The platform cannot currently prove whose money is whose."
+
+        - alert: LedgerUnbalancedRejections
+          expr: sum(rate(ledger_entries_written_total{outcome="rejected_unbalanced"}[5m])) > 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Unbalanced transactions are being rejected"
+            description: "Something upstream is submitting transactions whose legs do not sum to zero."
+
+    - name: platform
+      interval: 30s
+      rules:
+
+        - alert: ServiceDown
+          expr: up{job=~".*-service|api-gateway"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.job }} is not responding to scrapes"
+            description: "No metrics from {{ $labels.job }} for two minutes."
+
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total{namespace=~"meridian-.*"}[10m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.pod }} is restarting repeatedly"
+            description: "Pod {{ $labels.pod }} in {{ $labels.namespace }} has restarted within the last ten minutes."
