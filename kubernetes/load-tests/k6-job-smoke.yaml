@@ -1,0 +1,58 @@
+# ============================================================
+# k6 load generation, run inside the cluster.
+#
+# Load is generated from inside AWS rather than from a laptop, so the
+# results measure the platform rather than the operator's connection.
+# Generating 3,500 requests per second from a home broadband line is not
+# possible and would not be meaningful if it were.
+#
+# Usage:
+#   kubectl create configmap k6-scripts --from-file=load-tests/ -n meridian-edge
+#   kubectl apply -f kubernetes/load-tests/k6-job.yaml
+#   kubectl logs -f job/k6-smoke -n meridian-edge
+# ============================================================
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-smoke
+  namespace: meridian-edge
+spec:
+  backoffLimit: 0        # a failed load test should not silently retry
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: k6
+        scenario: smoke
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:0.54.0
+          args:
+            - run
+            - --out
+            - experimental-prometheus-rw
+            - /scripts/smoke.js
+          env:
+            # The gateway is reached by service name, inside the cluster.
+            - name: BASE_URL
+              value: http://api-gateway.meridian-edge.svc.cluster.local:8000
+            - name: K6_PROMETHEUS_RW_SERVER_URL
+              value: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write
+            - name: K6_PROMETHEUS_RW_TREND_STATS
+              value: "p(50),p(95),p(99),max"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: k6-scripts
