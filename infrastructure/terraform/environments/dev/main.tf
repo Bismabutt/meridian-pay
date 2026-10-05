@@ -31,16 +31,16 @@ module "eks" {
   project_name = var.project_name
   environment  = var.environment
 
-  cluster_version    = "1.30"
+  cluster_version    = "1.31"
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
   public_subnet_ids  = module.network.public_subnet_ids
 
   # Dev sizing. Spot for cost; production would use on-demand for the money zone.
-  node_instance_types = ["t3.medium"]
+  node_instance_types = ["t3.large"]
   node_capacity_type  = "SPOT"
-  node_desired_size   = 2
-  node_min_size       = 2
+  node_desired_size   = 3
+  node_min_size       = 3
   node_max_size       = 4
 
   endpoint_public_access = true
@@ -56,7 +56,7 @@ module "rds" {
   private_subnet_ids         = module.network.private_subnet_ids
   allowed_security_group_ids = [module.eks.cluster_security_group_id]
 
-  engine_version = "15.7"
+  engine_version = "15.19"
 
   # Sizing follows the criticality tiers in the service decomposition.
   databases = {

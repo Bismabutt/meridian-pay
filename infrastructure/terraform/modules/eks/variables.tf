@@ -59,3 +59,8 @@ variable "endpoint_public_access" {
   type        = bool
   default     = true
 }
+variable "vpc_cni_version" {
+  description = "VPC CNI addon version. NetworkPolicy enforcement requires the managed addon."
+  type        = string
+  default     = "v1.22.4-eksbuild.3"
+}

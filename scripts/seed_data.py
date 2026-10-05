@@ -44,18 +44,40 @@ CITIES = ["London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Bristol",
 def company_name(i):
     return f"{random.choice(PREFIXES)} {random.choice(SUFFIXES)} {random.choice(FORMS)}"
 
+def seed_password_hash(password="LoadTest2026!"):
+    """Matches auth-service: salt$sha256(salt + password).
+
+    All seeded accounts share one password, which is fine for a synthetic
+    environment and necessary for the load tests to authenticate.
+    """
+    import hashlib
+    salt = "0" * 32
+    digest = hashlib.sha256((salt + password).encode()).hexdigest()
+    return f"{salt}${digest}"
 
 def connect(db_name):
+    import os
+    prefix = os.getenv("DB_HOST_PREFIX", "")
+    short = db_name.replace("_db", "")
+    if prefix:
+        host = f"{prefix}-{short}.{os.getenv('DB_HOST_SUFFIX', '')}"
+        dbname = short
+    else:
+        host = "localhost"
+        dbname = db_name
     return psycopg2.connect(
-        host="localhost", port=5432, dbname=db_name,
-        user="meridian_app", password="MeridianDev2024!",
+        host=host,
+        port=5432,
+        dbname=dbname,
+        user=os.getenv("DB_USER", "meridian_app"),
+        password=os.getenv(f"PW_{short.upper()}", "MeridianDev2024!"),
     )
 
 
 def copy_from(conn, table, columns, rows):
     buf = io.StringIO()
     for row in rows:
-        buf.write("\t".join("" if v is None else str(v) for v in row) + "\n")
+        buf.write("\t".join("\\N" if v is None else str(v) for v in row) + "\n")
     buf.seek(0)
     with conn.cursor() as cur:
         cur.copy_from(buf, table, columns=columns)
@@ -82,7 +104,7 @@ def seed_users_and_accounts(count, batch=50_000):
 
             users.append((uid, name, f"{random.randint(10000000, 99999999)}",
                           f"accounts{start + i}@{name.split()[0].lower()}.co.uk",
-                          "seed$0000000000000000000000000000000000000000000000000000000000000000",
+                           seed_password_hash(),
                           "active", "verified", created))
 
             profiles.append((pid, uid, name,
