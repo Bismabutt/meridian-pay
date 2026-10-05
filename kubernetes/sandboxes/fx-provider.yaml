@@ -1,0 +1,49 @@
+# Sandbox for the fx-provider dependency. Stands in for a third party so
+# failure modes can be exercised deliberately.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fx-provider-sandbox
+  namespace: meridian-app
+  labels:
+    app: fx-provider-sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fx-provider-sandbox
+  template:
+    metadata:
+      labels:
+        app: fx-provider-sandbox
+    spec:
+      containers:
+        - name: fx-provider
+          image: 177034711013.dkr.ecr.eu-west-2.amazonaws.com/meridian-pay/fx-provider:3.0.0
+          ports:
+            - name: http
+              containerPort: 9102
+          env:
+            - name: PORT
+              value: "9102"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fx-provider-sandbox
+  namespace: meridian-app
+  labels:
+    app: fx-provider-sandbox
+spec:
+  selector:
+    app: fx-provider-sandbox
+  ports:
+    - name: http
+      port: 9102
+      targetPort: http

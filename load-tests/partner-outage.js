@@ -14,6 +14,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { Trend, Rate, Counter } from 'k6/metrics';
 import {
+  PAYMENT_URL,
   BASE_URL,
   login,
   authHeaders,
@@ -72,7 +73,7 @@ export function submitPayment(data) {
 
   const res = http.post(
     `${BASE_URL}/v1/payments`,
-    paymentBody(data.accountId),
+    paymentBody(data.accountId, idempotencyKey()),
     {
       headers: authHeaders(data.token, idempotencyKey()),
       tags: { name: 'submit_payment' },

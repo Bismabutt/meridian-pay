@@ -37,6 +37,8 @@ spec:
             - /scripts/smoke.js
           env:
             # The gateway is reached by service name, inside the cluster.
+            - name: PAYMENT_URL
+              value: http://payment-service.meridian-money.svc.cluster.local:8004
             - name: BASE_URL
               value: http://api-gateway.meridian-edge.svc.cluster.local:8000
             - name: K6_PROMETHEUS_RW_SERVER_URL
@@ -45,7 +47,7 @@ spec:
               value: "p(50),p(95),p(99),max"
           resources:
             requests:
-              cpu: 1000m
+              cpu: 500m
               memory: 1Gi
             limits:
               memory: 2Gi
