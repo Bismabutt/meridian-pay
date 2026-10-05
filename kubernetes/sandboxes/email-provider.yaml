@@ -1,0 +1,49 @@
+# Sandbox for the email-provider dependency. Stands in for a third party so
+# failure modes can be exercised deliberately.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-provider-sandbox
+  namespace: meridian-app
+  labels:
+    app: email-provider-sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email-provider-sandbox
+  template:
+    metadata:
+      labels:
+        app: email-provider-sandbox
+    spec:
+      containers:
+        - name: email-provider
+          image: 177034711013.dkr.ecr.eu-west-2.amazonaws.com/meridian-pay/email-provider:3.0.0
+          ports:
+            - name: http
+              containerPort: 9103
+          env:
+            - name: PORT
+              value: "9103"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-provider-sandbox
+  namespace: meridian-app
+  labels:
+    app: email-provider-sandbox
+spec:
+  selector:
+    app: email-provider-sandbox
+  ports:
+    - name: http
+      port: 9103
+      targetPort: http

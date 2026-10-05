@@ -7,6 +7,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import {
+  PAYMENT_URL,
   BASE_URL,
   login,
   authHeaders,
@@ -43,7 +44,7 @@ export default function (data) {
 
   const payment = http.post(
     `${BASE_URL}/v1/payments`,
-    paymentBody(data.accountId),
+    paymentBody(data.accountId, idempotencyKey()),
     { headers: authHeaders(data.token, idempotencyKey()), tags: { name: 'submit_payment' } }
   );
   check(payment, { 'payment accepted': (r) => r.status === 201 || r.status === 202 });

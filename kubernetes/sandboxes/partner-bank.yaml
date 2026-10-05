@@ -1,0 +1,49 @@
+# Sandbox for the partner-bank dependency. Stands in for a third party so
+# failure modes can be exercised deliberately.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: partner-bank-sandbox
+  namespace: meridian-app
+  labels:
+    app: partner-bank-sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: partner-bank-sandbox
+  template:
+    metadata:
+      labels:
+        app: partner-bank-sandbox
+    spec:
+      containers:
+        - name: partner-bank
+          image: 177034711013.dkr.ecr.eu-west-2.amazonaws.com/meridian-pay/partner-bank:3.0.0
+          ports:
+            - name: http
+              containerPort: 9100
+          env:
+            - name: PORT
+              value: "9100"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: partner-bank-sandbox
+  namespace: meridian-app
+  labels:
+    app: partner-bank-sandbox
+spec:
+  selector:
+    app: partner-bank-sandbox
+  ports:
+    - name: http
+      port: 9100
+      targetPort: http

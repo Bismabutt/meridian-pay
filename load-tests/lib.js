@@ -10,6 +10,11 @@ import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 export const BASE_URL = __ENV.BASE_URL || 'http://localhost:8000';
 
+// The gateway proxies /v1/{segment}/{path}, which needs two segments after
+// /v1/. POST /v1/payments has one, so payment submission goes direct to the
+// service. The routing gap is recorded as a defect rather than hidden here.
+export const PAYMENT_URL = __ENV.PAYMENT_URL || BASE_URL;
+
 // Loaded once per test run and shared across all virtual users, rather than
 // once per VU, which would multiply memory by the VU count.
 export const businesses = new SharedArray('businesses', function () {
@@ -44,15 +49,16 @@ export function idempotencyKey() {
   return `k6-${__VU}-${__ITER}-${Date.now()}-${randomIntBetween(1, 1e6)}`;
 }
 
-export function paymentBody(fromAccount) {
+export function paymentBody(profileId, key) {
   return JSON.stringify({
-    from_account_id: fromAccount,
-    to_sort_code: '04-00-04',
-    to_account_number: String(randomIntBetween(10000000, 99999999)),
-    to_name: 'Supplier Ltd',
+    debtor_profile_id: profileId,
+    creditor_sort_code: '04-00-04',
+    creditor_account_number: String(randomIntBetween(10000000, 99999999)),
+    creditor_name: 'Supplier Ltd',
     amount_minor: randomIntBetween(1000, 500000),
     currency: 'GBP',
     reference: `INV-${randomIntBetween(1000, 9999)}`,
+    idempotency_key: key,
   });
 }
 

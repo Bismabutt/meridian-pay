@@ -58,14 +58,15 @@ async def verify_token(authorization: str):
     return resp.json()
 
 
+@app.api_route("/v1/{segment}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 @app.api_route("/v1/{segment}/{path:path}",
                methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
-async def proxy(segment: str, path: str, request: Request):
+async def proxy(segment: str, request: Request, path: str = ""):
     upstream = ROUTES.get(segment)
     if not upstream:
         raise HTTPException(status_code=404, detail="Unknown route")
 
-    full_path = f"/v1/{segment}/{path}"
+    full_path = f"/v1/{segment}/{path}".rstrip("/")
     identity = request.client.host
 
     if full_path not in PUBLIC_PATHS:
